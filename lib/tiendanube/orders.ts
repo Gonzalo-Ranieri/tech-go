@@ -6,16 +6,11 @@ import { redis } from '@/lib/redis'
 const CACHE_TTL = 60 * 5 // 5 minutes
 
 export const getOrders = cache(async () => {
-  try {
-    const cacheKey = 'tiendanube:orders'
-    const cachedOrders = await redis.get(cacheKey)
+  const cacheKey = 'tiendanube:orders'
+  const cachedOrders = await redis.get(cacheKey)
 
-    if (cachedOrders) {
-      return JSON.parse(cachedOrders) as TiendanubeOrder[]
-    }
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
+  if (cachedOrders) {
+    return JSON.parse(cachedOrders) as TiendanubeOrder[]
   }
 
   const client = await getTiendanubeClient()
@@ -28,28 +23,17 @@ export const getOrders = cache(async () => {
   }
 
   const orders = await response.json() as TiendanubeOrder[]
-
-  try {
-    await redis.setex('tiendanube:orders', CACHE_TTL, JSON.stringify(orders))
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
-  }
+  await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(orders))
 
   return orders
 })
 
 export const getOrder = cache(async (orderId: string) => {
-  try {
-    const cacheKey = `tiendanube:order:${orderId}`
-    const cachedOrder = await redis.get(cacheKey)
+  const cacheKey = `tiendanube:order:${orderId}`
+  const cachedOrder = await redis.get(cacheKey)
 
-    if (cachedOrder) {
-      return JSON.parse(cachedOrder) as TiendanubeOrder
-    }
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
+  if (cachedOrder) {
+    return JSON.parse(cachedOrder) as TiendanubeOrder
   }
 
   const client = await getTiendanubeClient()
@@ -62,13 +46,7 @@ export const getOrder = cache(async (orderId: string) => {
   }
 
   const order = await response.json() as TiendanubeOrder
-
-  try {
-    await redis.setex(`tiendanube:order:${orderId}`, CACHE_TTL, JSON.stringify(order))
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
-  }
+  await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(order))
 
   return order
 })
@@ -86,13 +64,7 @@ export async function createOrder(order: Partial<TiendanubeOrder>) {
   }
 
   const newOrder = await response.json() as TiendanubeOrder
-
-  try {
-    await redis.del('tiendanube:orders')
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  await redis.del('tiendanube:orders')
 
   return newOrder
 }
@@ -110,16 +82,10 @@ export async function updateOrder(orderId: string, updates: Partial<TiendanubeOr
   }
 
   const updatedOrder = await response.json() as TiendanubeOrder
-
-  try {
-    await Promise.all([
-      redis.del('tiendanube:orders'),
-      redis.del(`tiendanube:order:${orderId}`),
-    ])
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  await Promise.all([
+    redis.del('tiendanube:orders'),
+    redis.del(`tiendanube:order:${orderId}`),
+  ])
 
   return updatedOrder
 }

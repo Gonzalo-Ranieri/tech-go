@@ -6,16 +6,11 @@ import { redis } from '@/lib/redis'
 const CACHE_TTL = 60 * 5 // 5 minutes
 
 export const getProducts = cache(async () => {
-  try {
-    const cacheKey = 'tiendanube:products'
-    const cachedProducts = await redis.get(cacheKey)
+  const cacheKey = 'tiendanube:products'
+  const cachedProducts = await redis.get(cacheKey)
 
-    if (cachedProducts) {
-      return JSON.parse(cachedProducts) as TiendanubeProduct[]
-    }
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
+  if (cachedProducts) {
+    return JSON.parse(cachedProducts) as TiendanubeProduct[]
   }
 
   const client = await getTiendanubeClient()
@@ -28,28 +23,17 @@ export const getProducts = cache(async () => {
   }
 
   const products = await response.json() as TiendanubeProduct[]
-
-  try {
-    await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(products))
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
-  }
+  await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(products))
 
   return products
 })
 
 export const getProduct = cache(async (productId: string) => {
-  try {
-    const cacheKey = `tiendanube:product:${productId}`
-    const cachedProduct = await redis.get(cacheKey)
+  const cacheKey = `tiendanube:product:${productId}`
+  const cachedProduct = await redis.get(cacheKey)
 
-    if (cachedProduct) {
-      return JSON.parse(cachedProduct) as TiendanubeProduct
-    }
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
+  if (cachedProduct) {
+    return JSON.parse(cachedProduct) as TiendanubeProduct
   }
 
   const client = await getTiendanubeClient()
@@ -62,13 +46,7 @@ export const getProduct = cache(async (productId: string) => {
   }
 
   const product = await response.json() as TiendanubeProduct
-
-  try {
-    await redis.setex(`tiendanube:product:${productId}`, CACHE_TTL, JSON.stringify(product))
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue without cache if Redis is unavailable
-  }
+  await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(product))
 
   return product
 })
@@ -86,13 +64,7 @@ export async function createProduct(product: Partial<TiendanubeProduct>) {
   }
 
   const newProduct = await response.json() as TiendanubeProduct
-
-  try {
-    await redis.del('tiendanube:products')
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  await redis.del('tiendanube:products')
 
   return newProduct
 }
@@ -110,16 +82,10 @@ export async function updateProduct(productId: string, updates: Partial<Tiendanu
   }
 
   const updatedProduct = await response.json() as TiendanubeProduct
-
-  try {
-    await Promise.all([
-      redis.del('tiendanube:products'),
-      redis.del(`tiendanube:product:${productId}`),
-    ])
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  await Promise.all([
+    redis.del('tiendanube:products'),
+    redis.del(`tiendanube:product:${productId}`),
+  ])
 
   return updatedProduct
 }
@@ -135,15 +101,10 @@ export async function deleteProduct(productId: string) {
     throw new Error(`Failed to delete product: ${response.statusText}`)
   }
 
-  try {
-    await Promise.all([
-      redis.del('tiendanube:products'),
-      redis.del(`tiendanube:product:${productId}`),
-    ])
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  await Promise.all([
+    redis.del('tiendanube:products'),
+    redis.del(`tiendanube:product:${productId}`),
+  ])
 
   return true
 }

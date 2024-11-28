@@ -51,16 +51,11 @@ export async function POST(req: Request) {
 }
 
 async function handleProductWebhook(event: string, body: any) {
-  try {
-    // Clear product caches
-    await Promise.all([
-      redis.del('tiendanube:products'),
-      redis.del(`tiendanube:product:${body.id}`),
-    ])
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  // Clear product caches
+  await Promise.all([
+    redis.del('tiendanube:products'),
+    redis.del(`tiendanube:product:${body.id}`),
+  ])
 
   // Additional processing based on event type
   switch (event) {
@@ -77,16 +72,11 @@ async function handleProductWebhook(event: string, body: any) {
 }
 
 async function handleOrderWebhook(event: string, body: any) {
-  try {
-    // Clear order caches
-    await Promise.all([
-      redis.del('tiendanube:orders'),
-      redis.del(`tiendanube:order:${body.id}`),
-    ])
-  } catch (error) {
-    console.error('Redis error:', error)
-    // Continue if Redis is unavailable
-  }
+  // Clear order caches
+  await Promise.all([
+    redis.del('tiendanube:orders'),
+    redis.del(`tiendanube:order:${body.id}`),
+  ])
 
   // Additional processing based on event type
   switch (event) {

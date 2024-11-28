@@ -1,7 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, Star } from 'lucide-react'
-import { notFound } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { SiteHeader } from "@/components/layout/site-header"
@@ -10,37 +9,31 @@ import { ProductImageGallery } from "@/components/products/product-image-gallery
 import { AddToCartButton } from "@/components/products/add-to-cart-button"
 import { ProductTabs } from "@/components/products/product-tabs"
 import { RelatedProducts } from "@/components/products/related-products"
-import { getProduct } from "@/lib/tiendanube/products"
 
-interface ProductPageProps {
-  params: {
-    id: string
-  }
+// This would typically come from your database or API
+const product = {
+  id: "1",
+  name: "Wireless Earbuds Pro",
+  price: 199.99,
+  rating: 4.5,
+  description: "Experience crystal-clear sound with our latest wireless earbuds. Featuring active noise cancellation, transparency mode, and up to 24 hours of battery life.",
+  specifications: {
+    "Battery Life": "Up to 24 hours",
+    "Connectivity": "Bluetooth 5.2",
+    "Water Resistance": "IPX4",
+    "Noise Cancellation": "Active Noise Cancellation",
+    "Charging": "USB-C & Wireless",
+    "Weight": "5.4g per earbud"
+  },
+  images: [
+    "/placeholder.svg",
+    "/placeholder.svg",
+    "/placeholder.svg",
+    "/placeholder.svg"
+  ]
 }
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProduct(params.id).catch(() => null)
-
-  if (!product) {
-    notFound()
-  }
-
-  const variant = product.variants[0] // Get first variant
-  const formattedProduct = {
-    id: product.id.toString(),
-    name: product.name.es,
-    price: parseFloat(variant.price),
-    description: product.description.es,
-    images: product.images.map(img => img.src),
-    specifications: {
-      "SKU": variant.sku || "N/A",
-      "Weight": `${variant.weight}g`,
-      "Dimensions": `${variant.width}x${variant.height}x${variant.depth}cm`,
-      "Stock": variant.stock.toString(),
-      "Free Shipping": product.free_shipping ? "Yes" : "No"
-    }
-  }
-
+export default function ProductPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
@@ -57,39 +50,35 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           <div className="grid gap-8 lg:grid-cols-2">
-            <ProductImageGallery images={formattedProduct.images} />
+            <ProductImageGallery images={product.images} />
 
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-bold">{formattedProduct.name}</h1>
+                <h1 className="text-3xl font-bold">{product.name}</h1>
                 <div className="mt-4 flex items-center gap-4">
                   <div className="flex items-center">
                     {Array.from({ length: 5 }).map((_, index) => (
                       <Star
                         key={index}
-                        className="h-5 w-5 fill-primary text-primary"
+                        className={`h-5 w-5 ${
+                          index < Math.floor(product.rating)
+                            ? "fill-primary text-primary"
+                            : "fill-muted text-muted-foreground"
+                        }`}
                       />
                     ))}
                     <span className="ml-2 text-sm text-muted-foreground">
-                      (5.0)
+                      ({product.rating})
                     </span>
                   </div>
-                  <div className="text-2xl font-bold">
-                    ${formattedProduct.price.toFixed(2)}
-                  </div>
+                  <div className="text-2xl font-bold">${product.price}</div>
                 </div>
               </div>
 
-              <p className="text-muted-foreground">{formattedProduct.description}</p>
+              <p className="text-muted-foreground">{product.description}</p>
 
               <div className="space-y-4">
-                {variant.stock > 0 ? (
-                  <AddToCartButton product={formattedProduct} />
-                ) : (
-                  <Button className="w-full" disabled>
-                    Out of Stock
-                  </Button>
-                )}
+                <AddToCartButton product={product} />
                 <Button variant="outline" className="w-full">
                   Add to Wishlist
                 </Button>
@@ -97,8 +86,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
 
-          <ProductTabs product={formattedProduct} />
-          <RelatedProducts currentProductId={formattedProduct.id} />
+          <ProductTabs product={product} />
+          <RelatedProducts currentProductId={product.id} />
         </div>
       </main>
       <SiteFooter />

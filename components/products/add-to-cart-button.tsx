@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { Minus, Plus, ShoppingCart } from 'lucide-react'
-import { useToast } from "@/components/ui/use-toast"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -11,21 +10,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useCart } from "@/lib/cart"
 
 interface AddToCartButtonProps {
   product: {
     id: string
     name: string
     price: number
-    image: string
   }
 }
 
 export function AddToCartButton({ product }: AddToCartButtonProps) {
   const [quantity, setQuantity] = useState(1)
-  const cart = useCart()
-  const { toast } = useToast()
 
   const decreaseQuantity = () => {
     setQuantity((prev) => Math.max(1, prev - 1))
@@ -36,19 +31,8 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
   }
 
   const addToCart = () => {
-    // Add item to cart
-    for (let i = 0; i < quantity; i++) {
-      cart.addItem(product)
-    }
-
-    // Show success toast
-    toast({
-      title: "Added to cart",
-      description: `${quantity} × ${product.name} added to your cart`,
-    })
-
-    // Reset quantity
-    setQuantity(1)
+    // Here you would typically dispatch an action to add the item to cart
+    console.log(`Adding ${quantity} x ${product.name} to cart`)
   }
 
   return (

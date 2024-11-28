@@ -1,6 +1,5 @@
 import Link from "next/link"
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Search, ShoppingCart, Menu } from "lucide-react"
+import { Search, ShoppingCart, Menu } from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
