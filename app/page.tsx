@@ -25,7 +25,7 @@ export default function Home() {
             </h1>
             <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
               Discover the latest in electronics and accessories. From phones to speakers,
-              we've got everything you need.
+              we&apos;ve got everything you need.
             </p>
             <div className="space-x-4">
               <Button asChild size="lg">
